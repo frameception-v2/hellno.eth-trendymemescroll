@@ -48,7 +48,7 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
         <img
           src={meme.imageUrl}
           alt={meme.text}
-          className="w-full h-auto rounded-lg"
+          className="w-full max-w-[300px] md:max-w-[600px] h-auto rounded-lg"
           loading="lazy"
         />
         <p className="text-neutral-800 text-sm">{meme.text}</p>
@@ -172,11 +172,11 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
         paddingRight: context?.client.safeAreaInsets?.right ?? 0,
       }}
     >
-      <div className="w-[300px] mx-auto py-2 px-2">
+      <div className="w-full max-w-[300px] md:max-w-[600px] mx-auto py-2 px-2">
         <h1 className="text-2xl font-bold text-center mb-4 text-neutral-900">{title}</h1>
         <div 
           ref={scrollRef}
-          className="overflow-y-auto h-[500px] snap-y snap-mandatory"
+          className="overflow-y-auto h-[400px] md:h-[500px] snap-y snap-mandatory"
           onScroll={(e) => {
             const index = Math.round(
               e.currentTarget.scrollTop / e.currentTarget.clientHeight
@@ -194,7 +194,7 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
           ))}
         </div>
         
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
           <PurpleButton
             onClick={() => {
               scrollRef.current?.scrollBy({
