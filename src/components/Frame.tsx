@@ -33,11 +33,13 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
     <Card className={`border-neutral-200 bg-white ${isActive ? '' : 'hidden'}`}>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <img
-            src={meme.author.pfpUrl}
-            alt={meme.author.username}
-            className={cn("w-8 h-8 rounded-full text-purple-600")}
-          />
+          <div className="text-purple-600">
+            <img
+              src={meme.author.pfpUrl}
+              alt={meme.author.username}
+              className={cn("w-8 h-8 rounded-full")}
+            />
+          </div>
           <CardTitle className="text-neutral-900">{meme.author.username}</CardTitle>
         </div>
       </CardHeader>
