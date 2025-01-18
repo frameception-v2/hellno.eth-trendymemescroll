@@ -86,6 +86,7 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
 
   const fetchTrendingMemes = async () => {
     try {
+      console.log('Fetching memes with API key:', NEYNAR_API_KEY);
       const response = await fetch(
         `https://api.neynar.com/v1/farcaster/channel/${MEMES_CHANNEL_ID}/casts?time=hour`,
         {
@@ -95,7 +96,17 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
         }
       );
       
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Received memes data:', data);
+      
+      if (!data?.casts) {
+        throw new Error('Invalid data format from API');
+      }
+      
       const memes = data.casts
         .filter((cast: any) => cast.embeds?.length > 0)
         .map((cast: any) => ({
