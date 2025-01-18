@@ -28,7 +28,7 @@ export default async function Image() {
               <path
                 d="M12 2L2 22H22L12 2Z"
                 fill="currentColor"
-                tw="text-purple-600"
+                className="text-purple-600"
               />
             </svg>
             <span tw="text-xl font-bold text-purple-600">Farcaster Frames</span>
