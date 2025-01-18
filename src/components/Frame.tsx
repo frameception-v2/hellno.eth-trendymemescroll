@@ -209,8 +209,8 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
             ))
           ) : (
             !error && <div className="text-center text-neutral-500 py-8">Loading memes...</div>
-          </div>
-        )}
+          )}
+        </div>
         
         {memes.length > 0 && (
           <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
@@ -237,8 +237,6 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
             Next
           </PurpleButton>
         </div>
-          </div>
-        )}
       </div>
     </div>
   );
