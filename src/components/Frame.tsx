@@ -7,6 +7,7 @@ import sdk, {
   type Context,
 } from "@farcaster/frame-sdk";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 
 import { config } from "~/components/providers/WagmiProvider";
 import { PurpleButton } from "~/components/ui/PurpleButton";
@@ -35,7 +36,7 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
           <img
             src={meme.author.pfpUrl}
             alt={meme.author.username}
-            className="w-8 h-8 rounded-full text-purple-600"
+            className={cn("w-8 h-8 rounded-full", "text-purple-600")}
           />
           <CardTitle className="text-neutral-900">{meme.author.username}</CardTitle>
         </div>
