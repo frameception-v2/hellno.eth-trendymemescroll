@@ -63,6 +63,7 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
+  const [error, setError] = useState<string | null>(null);
 
   const [added, setAdded] = useState(false);
 
@@ -88,12 +89,16 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
     try {
       const response = await fetch('/api/trending');
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API request failed with status ${response.status}`);
       }
       const { memes } = await response.json();
       setMemes(memes);
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error fetching memes:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load memes');
+      setMemes([]); // Clear memes on error
     }
   };
 
@@ -174,9 +179,18 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
     >
       <div className="w-full max-w-[300px] md:max-w-[600px] mx-auto py-2 px-2">
         <h1 className="text-2xl font-bold text-center mb-4 text-neutral-900">{title}</h1>
-        <div 
-          ref={scrollRef}
-          className="overflow-y-auto h-[400px] md:h-[500px] snap-y snap-mandatory"
+        {error ? (
+          <div className="bg-red-50 border border-red-200 p-4 rounded-lg text-red-800">
+            <p className="font-medium">Error loading memes:</p>
+            <p>{error}</p>
+            <p className="mt-2 text-sm">
+              Please check your API key configuration and try again.
+            </p>
+          </div>
+        ) : (
+          <div 
+            ref={scrollRef}
+            className="overflow-y-auto h-[400px] md:h-[500px] snap-y snap-mandatory"
           onScroll={(e) => {
             const index = Math.round(
               e.currentTarget.scrollTop / e.currentTarget.clientHeight
@@ -184,14 +198,18 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
             setCurrentIndex(index);
           }}
         >
-          {memes.map((meme, index) => (
-            <div 
-              key={meme.hash}
-              className="snap-start h-full"
-            >
-              <MemeCard meme={meme} isActive={index === currentIndex} />
-            </div>
-          ))}
+          {memes.length > 0 ? (
+            memes.map((meme, index) => (
+              <div 
+                key={meme.hash}
+                className="snap-start h-full"
+              >
+                <MemeCard meme={meme} isActive={index === currentIndex} />
+              </div>
+            ))
+          ) : (
+            !error && <div className="text-center text-neutral-500 py-8">Loading memes...</div>
+          )}
         </div>
         
         <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
