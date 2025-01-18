@@ -214,29 +214,30 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
         
         {memes.length > 0 && (
           <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
-          <PurpleButton
-            onClick={() => {
-              scrollRef.current?.scrollBy({
-                top: -scrollRef.current.clientHeight,
-                behavior: 'smooth',
-              });
-            }}
-            disabled={currentIndex === 0}
-          >
-            Previous
-          </PurpleButton>
-          <PurpleButton
-            onClick={() => {
-              scrollRef.current?.scrollBy({
-                top: scrollRef.current.clientHeight,
-                behavior: 'smooth',
-              });
-            }}
-            disabled={currentIndex === memes.length - 1}
-          >
-            Next
-          </PurpleButton>
-        </div>
+            <PurpleButton
+              onClick={() => {
+                scrollRef.current?.scrollBy({
+                  top: -scrollRef.current.clientHeight,
+                  behavior: 'smooth',
+                });
+              }}
+              disabled={currentIndex === 0}
+            >
+              Previous
+            </PurpleButton>
+            <PurpleButton
+              onClick={() => {
+                scrollRef.current?.scrollBy({
+                  top: scrollRef.current.clientHeight,
+                  behavior: 'smooth',
+                });
+              }}
+              disabled={currentIndex === memes.length - 1}
+            >
+              Next
+            </PurpleButton>
+          </div>
+        )}
       </div>
     </div>
   );
