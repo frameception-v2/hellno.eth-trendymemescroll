@@ -86,54 +86,11 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
 
   const fetchTrendingMemes = async () => {
     try {
-      console.log('Fetching memes with API key:', NEYNAR_API_KEY);
-      const response = await fetch(
-        `https://api.neynar.com/v1/farcaster/channel/${MEMES_CHANNEL_ID}/casts?time=hour`,
-        {
-          headers: {
-            'api_key': NEYNAR_API_KEY,
-          },
-        }
-      );
-      
+      const response = await fetch('/api/trending');
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
-      
-      const data = await response.json();
-      console.log('Received memes data:', data);
-      
-      if (!data?.casts) {
-        throw new Error('Invalid data format from API');
-      }
-      
-      const memes = data.casts
-        .filter((cast: any) => cast.embeds?.length > 0)
-        .map((cast: any) => ({
-          hash: cast.hash,
-          text: cast.text,
-          imageUrl: cast.embeds[0].url,
-          author: {
-            username: cast.author.username,
-            pfpUrl: cast.author.pfp_url,
-          },
-        }));
-      
-      setMemes(memes);
-    } catch (error) {
-      console.error('Error fetching memes:', error);
-    }
-        .filter((cast: any) => cast.embeds?.length > 0)
-        .map((cast: any) => ({
-          hash: cast.hash,
-          text: cast.text,
-          imageUrl: cast.embeds[0].url,
-          author: {
-            username: cast.author.username,
-            pfpUrl: cast.author.pfp_url,
-          },
-        }));
-      
+      const { memes } = await response.json();
       setMemes(memes);
     } catch (error) {
       console.error('Error fetching memes:', error);
