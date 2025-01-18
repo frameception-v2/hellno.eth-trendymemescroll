@@ -123,6 +123,21 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
     } catch (error) {
       console.error('Error fetching memes:', error);
     }
+        .filter((cast: any) => cast.embeds?.length > 0)
+        .map((cast: any) => ({
+          hash: cast.hash,
+          text: cast.text,
+          imageUrl: cast.embeds[0].url,
+          author: {
+            username: cast.author.username,
+            pfpUrl: cast.author.pfp_url,
+          },
+        }));
+      
+      setMemes(memes);
+    } catch (error) {
+      console.error('Error fetching memes:', error);
+    }
   };
 
   useEffect(() => {
