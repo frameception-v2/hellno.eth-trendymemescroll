@@ -8,6 +8,7 @@ import sdk, {
 } from "@farcaster/frame-sdk";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
+import { MEMES_CHANNEL_ID, NEYNAR_API_KEY } from "~/lib/constants";
 
 import { config } from "~/components/providers/WagmiProvider";
 import { PurpleButton } from "~/components/ui/PurpleButton";
