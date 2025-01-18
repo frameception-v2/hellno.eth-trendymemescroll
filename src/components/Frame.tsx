@@ -191,13 +191,13 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
           <div 
             ref={scrollRef}
             className="overflow-y-auto h-[400px] md:h-[500px] snap-y snap-mandatory"
-          onScroll={(e) => {
-            const index = Math.round(
-              e.currentTarget.scrollTop / e.currentTarget.clientHeight
-            );
-            setCurrentIndex(index);
-          }}
-        >
+            onScroll={(e) => {
+              const index = Math.round(
+                e.currentTarget.scrollTop / e.currentTarget.clientHeight
+              );
+              setCurrentIndex(index);
+            }}
+          >
           {memes.length > 0 ? (
             memes.map((meme, index) => (
               <div 
