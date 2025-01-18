@@ -36,7 +36,7 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
           <img
             src={meme.author.pfpUrl}
             alt={meme.author.username}
-            className={cn("w-8 h-8 rounded-full", "text-purple-600")}
+            className={cn("w-8 h-8 rounded-full text-purple-600")}
           />
           <CardTitle className="text-neutral-900">{meme.author.username}</CardTitle>
         </div>
