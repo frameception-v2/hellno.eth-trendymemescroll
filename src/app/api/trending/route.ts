@@ -26,13 +26,22 @@ export async function GET(request: Request) {
     const cursor = searchParams.get('cursor') || undefined;
     const timeWindow = searchParams.get('time_window') || '12h';
 
+    console.log('Fetching trending memes with params:', {
+      channel_id: MEMES_CHANNEL_ID,
+      time_window: '24h', // Using 24h as default for more content
+      limit: 10,
+      cursor: cursor || 'none'
+    });
+
     const apiUrl = new URL('https://api.neynar.com/v2/farcaster/feed/trending');
     apiUrl.searchParams.set('channel_id', MEMES_CHANNEL_ID);
-    apiUrl.searchParams.set('time_window', timeWindow);
+    apiUrl.searchParams.set('time_window', '24h'); // Set to 24h for more trending content
     apiUrl.searchParams.set('limit', '10'); // API requires limit between 1-10
     if (cursor) {
       apiUrl.searchParams.set('cursor', cursor);
     }
+
+    console.log('Constructed API URL:', apiUrl.toString());
 
     const headers = new Headers();
     if (NEYNAR_API_KEY) {
@@ -40,10 +49,13 @@ export async function GET(request: Request) {
     }
     headers.append('Content-Type', 'application/json');
 
+    console.log('Making API request to Neynar...');
+    const startTime = Date.now();
     const response = await fetch(apiUrl.toString(), {
       headers,
       next: { revalidate: 60 } // Cache for 60 seconds
     });
+    console.log(`API request completed in ${Date.now() - startTime}ms`);
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -52,9 +64,17 @@ export async function GET(request: Request) {
       );
     }
 
-    const { casts, next } = await response.json();
+    const responseData = await response.json();
+    console.log('Received API response:', {
+      status: response.status,
+      castCount: responseData.casts?.length || 0,
+      hasNext: !!responseData.next
+    });
+
+    const { casts, next } = responseData;
 
     if (!Array.isArray(casts)) {
+      console.error('Invalid casts data format:', responseData);
       throw new Error('Invalid data format from Neynar API');
     }
 
