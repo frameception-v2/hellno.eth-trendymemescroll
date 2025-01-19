@@ -57,7 +57,7 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
   );
 }
 
-export default function Frame({ title }: { title?: string } = { title: PROJECT_TITLE }) {
+export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [memes, setMemes] = useState<Meme[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -236,9 +236,9 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
               </PurpleButton>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
-  );
   );
 }
