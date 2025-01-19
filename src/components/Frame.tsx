@@ -44,7 +44,8 @@ interface DebugLog {
 
 function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
   return (
-    <Card className={`border-neutral-200 bg-white ${isActive ? '' : 'hidden'}`}>
+    <Card className={`border-neutral-200 bg-white shadow-none ${isActive ? '' : 'hidden'}`}>
+      <div className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-center gap-2">
           <div className="text-purple-600">
@@ -58,14 +59,16 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="relative w-full" style={{ aspectRatio: IMAGE_ASPECT_RATIO }}>
+        <div className="relative w-full h-[80vh] flex items-center justify-center">
           <img
             src={meme.imageUrl}
             alt={meme.text}
-            className="w-full h-full object-cover rounded-lg"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
             style={{
-              maxWidth: `${IMAGE_MAX_WIDTH}px`,
-              maxHeight: `${IMAGE_MAX_HEIGHT}px`,
+              width: 'auto',
+              height: 'auto',
+              maxWidth: 'min(100vw, 800px)',
+              maxHeight: '80vh',
             }}
             loading="eager"
             onError={(e) => {
@@ -301,6 +304,12 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
                   fetchTrendingMemes(false);
                 }
               }
+            }}
+            style={{
+              scrollSnapType: 'y mandatory',
+              scrollBehavior: 'smooth',
+              height: 'calc(100vh - 150px)',
+              overflowY: 'auto',
             }}
           >
           {error ? (
