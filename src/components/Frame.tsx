@@ -27,6 +27,12 @@ interface Meme {
     username: string;
     pfpUrl: string;
   };
+  engagement: {
+    likes: number;
+    recasts: number;
+    replies: number;
+  };
+  timestamp: string;
 }
 
 interface DebugLog {
@@ -52,12 +58,26 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <img
-          src={meme.imageUrl}
-          alt={meme.text}
-          className="w-full max-w-[300px] md:max-w-[600px] h-auto rounded-lg"
-          loading="lazy"
-        />
+        <div className="relative">
+          <img
+            src={meme.imageUrl}
+            alt={meme.text}
+            className="w-full max-w-[300px] md:max-w-[600px] h-auto rounded-lg"
+            loading="lazy"
+            onError={(e) => {
+              // Fallback to author's profile picture if meme image fails to load
+              e.currentTarget.src = meme.author.pfpUrl;
+            }}
+          />
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+            {new Date(meme.timestamp).toLocaleDateString()}
+          </div>
+        </div>
+        <div className="flex gap-4 text-sm mt-2">
+          <span>❤️ {meme.engagement.likes}</span>
+          <span>🔁 {meme.engagement.recasts}</span>
+          <span>💬 {meme.engagement.replies}</span>
+        </div>
         <p className="text-neutral-800 text-sm">{meme.text}</p>
       </CardContent>
     </Card>
@@ -110,11 +130,28 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
       }
       const data = await response.json();
       console.log('API Response:', data); // Log full response for debugging
-      if (!data?.memes) {
+      if (!data?.data?.memes) {
         throw new Error(`Invalid response format from API. Received: ${JSON.stringify(data, null, 2)}`);
       }
       
-      setMemes(data.memes);
+      // Transform API response to match our Meme interface
+      const formattedMemes = data.data.memes.map((meme: any) => ({
+        hash: meme.hash,
+        text: meme.text,
+        imageUrl: meme.imageUrl,
+        author: {
+          username: meme.author.username,
+          pfpUrl: meme.author.pfpUrl
+        },
+        engagement: {
+          likes: meme.engagement.likes,
+          recasts: meme.engagement.recasts,
+          replies: meme.engagement.replies
+        },
+        timestamp: meme.timestamp
+      }));
+      
+      setMemes(formattedMemes);
       setError(null);
       
       if (DEBUG_MODE) {
