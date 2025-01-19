@@ -20,12 +20,19 @@ interface NeynarCast {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const cursor = searchParams.get('cursor') || undefined;
+    const timeWindow = searchParams.get('time_window') || '12h';
+
     const apiUrl = new URL('https://api.neynar.com/v2/farcaster/feed/trending');
     apiUrl.searchParams.set('channel_id', MEMES_CHANNEL_ID);
-    apiUrl.searchParams.set('time_window', '7d');
-    apiUrl.searchParams.set('limit', '25'); // Limit to top 25 trending memes
+    apiUrl.searchParams.set('time_window', timeWindow);
+    apiUrl.searchParams.set('limit', '10'); // API requires limit between 1-10
+    if (cursor) {
+      apiUrl.searchParams.set('cursor', cursor);
+    }
 
     const headers = new Headers();
     if (NEYNAR_API_KEY) {
@@ -45,7 +52,7 @@ export async function GET() {
       );
     }
 
-    const { casts } = await response.json();
+    const { casts, next } = await response.json();
 
     if (!Array.isArray(casts)) {
       throw new Error('Invalid data format from Neynar API');
@@ -79,6 +86,8 @@ export async function GET() {
         memes,
         count: memes.length,
         lastUpdated: new Date().toISOString(),
+        nextCursor: next?.cursor,
+        timeWindow
       }
     });
   } catch (error) {
