@@ -27,11 +27,14 @@ export async function GET() {
     apiUrl.searchParams.set('time_window', '7d');
     apiUrl.searchParams.set('limit', '25'); // Limit to top 25 trending memes
 
+    const headers = new Headers();
+    if (NEYNAR_API_KEY) {
+      headers.append('api_key', NEYNAR_API_KEY);
+    }
+    headers.append('Content-Type', 'application/json');
+
     const response = await fetch(apiUrl.toString(), {
-      headers: {
-        'api_key': NEYNAR_API_KEY,
-        'Content-Type': 'application/json',
-      },
+      headers,
       next: { revalidate: 60 } // Cache for 60 seconds
     });
 
