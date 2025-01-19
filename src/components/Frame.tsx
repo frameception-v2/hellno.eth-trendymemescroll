@@ -105,11 +105,13 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
       
       const response = await fetch(endpoint);
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
       }
       const data = await response.json();
+      console.log('API Response:', data); // Log full response for debugging
       if (!data?.memes) {
-        throw new Error('Invalid response format from API');
+        throw new Error(`Invalid response format from API. Received: ${JSON.stringify(data, null, 2)}`);
       }
       
       setMemes(data.memes);
@@ -125,7 +127,10 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
       }
     } catch (error) {
       console.error('Error fetching memes:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load memes');
+      const errorMessage = error instanceof Error ? 
+        `${error.message}\n\nPlease check:\n1. NEYNAR_API_KEY is set\n2. API endpoint is correct\n3. Network connection` : 
+        'Failed to load memes';
+      setError(errorMessage);
       setMemes([]);
       
       if (DEBUG_MODE) {
