@@ -58,18 +58,22 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="relative">
+        <div className="relative w-full" style={{ aspectRatio: IMAGE_ASPECT_RATIO }}>
           <img
             src={meme.imageUrl}
             alt={meme.text}
-            className="w-full max-w-[300px] md:max-w-[600px] h-auto rounded-lg"
-            loading="lazy"
+            className="w-full h-full object-cover rounded-lg"
+            style={{
+              maxWidth: `${IMAGE_MAX_WIDTH}px`,
+              maxHeight: `${IMAGE_MAX_HEIGHT}px`,
+            }}
+            loading="eager"
             onError={(e) => {
-              // Fallback to author's profile picture if meme image fails to load
               e.currentTarget.src = meme.author.pfpUrl;
+              e.currentTarget.className = 'w-full h-full object-contain rounded-lg';
             }}
           />
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+          <div className="absolute bottom-2 right-2 bg-black/75 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
             {new Date(meme.timestamp).toLocaleDateString()}
           </div>
         </div>
@@ -278,7 +282,11 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
         ) : (
           <div 
             ref={scrollRef}
-            className="overflow-y-auto h-[calc(100vh-150px)] snap-y snap-mandatory"
+            className="overflow-y-auto h-[calc(100vh-150px)] snap-y snap-mandatory scroll-smooth"
+            style={{
+              scrollSnapType: 'y mandatory',
+              scrollBehavior: 'smooth',
+            }}
             onScroll={(e) => {
               const container = e.currentTarget;
               const index = Math.round(container.scrollTop / container.clientHeight);
@@ -286,8 +294,10 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
               
               // Infinite scroll logic
               if (hasMore && !isLoadingMore) {
-                const bottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-                if (bottom) {
+                const { scrollTop, scrollHeight, clientHeight } = container;
+                const isNearBottom = scrollHeight - (scrollTop + clientHeight) < SCROLL_THRESHOLD;
+                
+                if (isNearBottom) {
                   fetchTrendingMemes(false);
                 }
               }
