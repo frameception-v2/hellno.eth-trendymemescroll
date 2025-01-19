@@ -1,5 +1,6 @@
 export const PROJECT_ID = "TrendyMemeScroll";
 export const PROJECT_TITLE = "TrendyMemeScroll";
+export const DEBUG_MODE = process.env.NODE_ENV === 'development';
 export const PROJECT_DESCRIPTION = "Discover and share the hottest memes on Farcaster. Scroll, react, and connect with the community!";
 // API keys should only be used server-side
 export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY || '';

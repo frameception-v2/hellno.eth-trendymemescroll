@@ -29,6 +29,13 @@ interface Meme {
   };
 }
 
+interface DebugLog {
+  timestamp: string;
+  endpoint: string;
+  params: Record<string, any>;
+  response: any;
+}
+
 function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
   return (
     <Card className={`border-neutral-200 bg-white ${isActive ? '' : 'hidden'}`}>
@@ -64,7 +71,7 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
   const [error, setError] = useState<string | null>(null);
-
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [added, setAdded] = useState(false);
 
   const [addFrameResult, setAddFrameResult] = useState("");
@@ -87,7 +94,16 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
 
   const fetchTrendingMemes = async () => {
     try {
-      const response = await fetch('/api/trending');
+      const endpoint = '/api/trending';
+      const params = {
+        channel_id: MEMES_CHANNEL_ID,
+        time_window: '24h',
+        limit: 10
+      };
+      
+      console.log('Fetching trending memes from:', endpoint, 'with params:', params);
+      
+      const response = await fetch(endpoint);
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
@@ -95,12 +111,31 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
       if (!data?.memes) {
         throw new Error('Invalid response format from API');
       }
+      
       setMemes(data.memes);
       setError(null);
+      
+      if (DEBUG_MODE) {
+        setDebugLogs(prev => [{
+          timestamp: new Date().toISOString(),
+          endpoint,
+          params,
+          response: data
+        }, ...prev].slice(0, 5)); // Keep last 5 logs
+      }
     } catch (error) {
       console.error('Error fetching memes:', error);
       setError(error instanceof Error ? error.message : 'Failed to load memes');
       setMemes([]);
+      
+      if (DEBUG_MODE) {
+        setDebugLogs(prev => [{
+          timestamp: new Date().toISOString(),
+          endpoint: '/api/trending',
+          params: {},
+          response: { error: error instanceof Error ? error.message : 'Unknown error' }
+        }, ...prev].slice(0, 5));
+      }
     }
   };
 
@@ -242,6 +277,24 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
               </PurpleButton>
             </div>
           )}
+          </div>
+        )}
+        
+        {DEBUG_MODE && debugLogs.length > 0 && (
+          <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+            <h3 className="font-bold mb-2">Debug Logs</h3>
+            {debugLogs.map((log, index) => (
+              <div key={index} className="mb-4 p-2 bg-white rounded">
+                <div className="text-sm text-gray-600">{log.timestamp}</div>
+                <div className="font-medium">Endpoint: {log.endpoint}</div>
+                <pre className="text-xs bg-gray-50 p-2 rounded mt-1">
+                  Params: {JSON.stringify(log.params, null, 2)}
+                </pre>
+                <pre className="text-xs bg-gray-50 p-2 rounded mt-1">
+                  Response: {JSON.stringify(log.response, null, 2)}
+                </pre>
+              </div>
+            ))}
           </div>
         )}
       </div>
