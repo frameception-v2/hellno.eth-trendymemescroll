@@ -1,6 +1,20 @@
 "use client";
 
 import { useEffect, useCallback, useState, useRef } from "react";
+
+// Debounce utility function
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  return function(...args: Parameters<T>) {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
 import sdk, {
   AddFrame,
   SignIn as SignInCore,
@@ -59,16 +73,16 @@ function MemeCard({ meme, isActive }: { meme: Meme; isActive: boolean }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="relative w-full h-[80vh] flex items-center justify-center">
+        <div className="relative w-full h-[90vh] flex items-center justify-center">
           <img
             src={meme.imageUrl}
             alt={meme.text}
-            className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             style={{
               width: 'auto',
               height: 'auto',
-              maxWidth: 'min(100vw, 800px)',
-              maxHeight: '80vh',
+              maxWidth: 'min(100vw, 1200px)',
+              maxHeight: '90vh',
             }}
             loading="eager"
             onError={(e) => {
@@ -122,9 +136,31 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
     }
   }, []);
 
+  // Debounced scroll handler
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current || isLoadingMore || !hasMore) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    const isNearBottom = scrollHeight - (scrollTop + clientHeight) < SCROLL_THRESHOLD;
+    
+    if (isNearBottom) {
+      fetchTrendingMemes(false);
+    }
+  }, [isLoadingMore, hasMore]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const debouncedScroll = debounce(handleScroll, SCROLL_DEBOUNCE);
+    container.addEventListener('scroll', debouncedScroll);
+    return () => container.removeEventListener('scroll', debouncedScroll);
+  }, [handleScroll]);
+
   const fetchTrendingMemes = async (initialLoad = true) => {
     try {
-      if (isLoadingMore) return;
+      if (isLoadingMore || (!initialLoad && !hasMore)) return;
       setIsLoadingMore(true);
       
       const endpoint = '/api/trending';
@@ -285,31 +321,13 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
         ) : (
           <div 
             ref={scrollRef}
-            className="overflow-y-auto h-[calc(100vh-150px)] snap-y snap-mandatory scroll-smooth"
+            className="overflow-y-auto h-[calc(100vh-100px)] snap-y snap-mandatory scroll-smooth"
             style={{
               scrollSnapType: 'y mandatory',
               scrollBehavior: 'smooth',
-            }}
-            onScroll={(e) => {
-              const container = e.currentTarget;
-              const index = Math.round(container.scrollTop / container.clientHeight);
-              setCurrentIndex(index);
-              
-              // Infinite scroll logic
-              if (hasMore && !isLoadingMore) {
-                const { scrollTop, scrollHeight, clientHeight } = container;
-                const isNearBottom = scrollHeight - (scrollTop + clientHeight) < SCROLL_THRESHOLD;
-                
-                if (isNearBottom) {
-                  fetchTrendingMemes(false);
-                }
-              }
-            }}
-            style={{
-              scrollSnapType: 'y mandatory',
-              scrollBehavior: 'smooth',
-              height: 'calc(100vh - 150px)',
+              height: 'calc(100vh - 100px)',
               overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
           {error ? (
