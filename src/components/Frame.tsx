@@ -240,4 +240,5 @@ export default function Frame({ title }: { title?: string } = { title: PROJECT_T
       </div>
     </div>
   );
+  );
 }
