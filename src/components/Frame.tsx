@@ -89,16 +89,18 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
     try {
       const response = await fetch('/api/trending');
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `API request failed with status ${response.status}`);
+        throw new Error(`API request failed with status ${response.status}`);
       }
-      const { memes } = await response.json();
-      setMemes(memes);
-      setError(null); // Clear any previous errors
+      const data = await response.json();
+      if (!data?.memes) {
+        throw new Error('Invalid response format from API');
+      }
+      setMemes(data.memes);
+      setError(null);
     } catch (error) {
       console.error('Error fetching memes:', error);
       setError(error instanceof Error ? error.message : 'Failed to load memes');
-      setMemes([]); // Clear memes on error
+      setMemes([]);
     }
   };
 
@@ -198,7 +200,11 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
               setCurrentIndex(index);
             }}
           >
-          {memes.length > 0 ? (
+          {error ? (
+            <div className="text-center text-red-500 py-8">
+              Error loading memes: {error}
+            </div>
+          ) : memes.length > 0 ? (
             memes.map((meme, index) => (
               <div 
                 key={meme.hash}
@@ -208,7 +214,7 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
               </div>
             ))
           ) : (
-            !error && <div className="text-center text-neutral-500 py-8">Loading memes...</div>
+            <div className="text-center text-neutral-500 py-8">Loading memes...</div>
           )}
           {memes.length > 0 && (
             <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
