@@ -20,7 +20,10 @@ import sdk, {
   SignIn as SignInCore,
   type Context,
 } from "@farcaster/frame-sdk";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Card } from "~/components/ui/card";
+import { CardHeader } from "~/components/ui/card";
+import { CardTitle } from "~/components/ui/card";
+import { CardContent } from "~/components/ui/card";
 import { cn } from "~/lib/utils";
 import { MEMES_CHANNEL_ID, NEYNAR_API_KEY, DEBUG_MODE } from "~/lib/constants";
 
