@@ -88,6 +88,9 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [memes, setMemes] = useState<Meme[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
   const [error, setError] = useState<string | null>(null);
@@ -112,13 +115,17 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
     }
   }, []);
 
-  const fetchTrendingMemes = async () => {
+  const fetchTrendingMemes = async (initialLoad = true) => {
     try {
+      if (isLoadingMore) return;
+      setIsLoadingMore(true);
+      
       const endpoint = '/api/trending';
       const params = {
         channel_id: MEMES_CHANNEL_ID,
         time_window: '24h',
-        limit: 10
+        limit: 10,
+        cursor: initialLoad ? undefined : cursor
       };
       
       console.log('Fetching trending memes from:', endpoint, 'with params:', params);
@@ -151,8 +158,10 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
         timestamp: meme.timestamp
       }));
       
-      setMemes(formattedMemes);
+      setMemes(prev => initialLoad ? formattedMemes : [...prev, ...formattedMemes]);
       setError(null);
+      setCursor(data.data?.cursor);
+      setHasMore(formattedMemes.length > 0);
       
       if (DEBUG_MODE) {
         setDebugLogs(prev => [{
@@ -183,7 +192,7 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
 
   useEffect(() => {
     const load = async () => {
-      await fetchTrendingMemes();
+      await fetchTrendingMemes(true);
       const context = await sdk.context;
       if (!context) {
         return;
@@ -269,12 +278,19 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
         ) : (
           <div 
             ref={scrollRef}
-            className="overflow-y-auto h-[400px] md:h-[500px] snap-y snap-mandatory"
+            className="overflow-y-auto h-[calc(100vh-150px)] snap-y snap-mandatory"
             onScroll={(e) => {
-              const index = Math.round(
-                e.currentTarget.scrollTop / e.currentTarget.clientHeight
-              );
+              const container = e.currentTarget;
+              const index = Math.round(container.scrollTop / container.clientHeight);
               setCurrentIndex(index);
+              
+              // Infinite scroll logic
+              if (hasMore && !isLoadingMore) {
+                const bottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+                if (bottom) {
+                  fetchTrendingMemes(false);
+                }
+              }
             }}
           >
           {error ? (
@@ -293,30 +309,9 @@ export default function Frame({ title = PROJECT_TITLE }: { title?: string }) {
           ) : (
             <div className="text-center text-neutral-500 py-8">Loading memes...</div>
           )}
-          {memes.length > 0 && (
-            <div className="flex flex-col md:flex-row justify-center gap-2 mt-4 w-full max-w-[300px] md:max-w-[600px] mx-auto">
-              <PurpleButton
-                onClick={() => {
-                  scrollRef.current?.scrollBy({
-                    top: -scrollRef.current.clientHeight,
-                    behavior: 'smooth',
-                  });
-                }}
-                disabled={currentIndex === 0}
-              >
-                Previous
-              </PurpleButton>
-              <PurpleButton
-                onClick={() => {
-                  scrollRef.current?.scrollBy({
-                    top: scrollRef.current.clientHeight,
-                    behavior: 'smooth',
-                  });
-                }}
-                disabled={currentIndex === memes.length - 1}
-              >
-                Next
-              </PurpleButton>
+          {isLoadingMore && (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
             </div>
           )}
           </div>
